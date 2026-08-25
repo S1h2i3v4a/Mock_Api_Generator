@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://mock-api-generator-1-xys4.onrender.com";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
