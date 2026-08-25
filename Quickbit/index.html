@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QuickBite — Powered by Mock-Craft Engine</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      @keyframes shimmer {
+        100% {
+          transform: translateX(100%);
+        }
+      }
+      .shimmer {
+        position: relative;
+        overflow: hidden;
+      }
+      .shimmer::after {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        transform: translateX(-100%);
+        background-image: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0,
+          rgba(255, 255, 255, 0.05) 20%,
+          rgba(255, 255, 255, 0.1) 60%,
+          rgba(255, 255, 255, 0)
+        );
+        animation: shimmer 1.5s infinite;
+        content: "";
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-orange-500 selection:text-white"
+  >
+    <!-- ========================================== -->
+    <!-- TOP NAVBAR -->
+    <!-- ========================================== -->
+    <header
+      class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 px-4 lg:px-8 py-3.5"
+    >
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <!-- Brand Logo -->
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center text-white shadow-lg shadow-orange-500/20"
+          >
+            <i data-lucide="utensils" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg font-black tracking-tight text-white">
+                QuickBite
+              </h1>
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                >Live Mock</span
+              >
+            </div>
+            <p class="text-xs text-slate-400">
+              Zero Backend Food Delivery Demo
+            </p>
+          </div>
+        </div>
+
+        <!-- Right Controls: Status & Cart Trigger -->
+        <div class="flex items-center gap-3">
+          <!-- Live API Pulse Badge -->
+          <div
+            id="apiBadge"
+            class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950 border border-slate-800 text-xs"
+          >
+            <span class="relative flex h-2 w-2">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+              ></span>
+              <span
+                class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"
+              ></span>
+            </span>
+            <span class="text-slate-300 font-mono text-[11px]"
+              >Mock API: Connected</span
+            >
+          </div>
+
+          <!-- Reload Menu Button -->
+          <button
+            onclick="fetchFoodMenu()"
+            title="Re-fetch Menu from Mock Engine"
+            class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all"
+          >
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+
+          <!-- Cart Drawer Button -->
+          <button
+            onclick="toggleCartDrawer(true)"
+            class="relative flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-lg shadow-orange-500/25 transition-all hover:scale-105 active:scale-95"
+          >
+            <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <span>Cart</span>
+            <span
+              id="cartCountBadge"
+              class="px-1.5 py-0.2 rounded-full bg-white text-orange-600 font-black text-[10px]"
+              >0</span
+            >
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- MAIN HERO & FOOD MENU SECTION -->
+    <!-- ========================================== -->
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8">
+      <!-- Hero Banner -->
+      <div
+        class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600/20 via-amber-600/10 to-transparent border border-orange-500/20 p-6 sm:p-8"
+      >
+        <div class="max-w-xl space-y-2">
+          <span
+            class="text-xs font-bold uppercase tracking-wider text-orange-400"
+            >⚡ Live API Simulation Demo</span
+          >
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">
+            Delicious food, delivered hot & fresh.
+          </h2>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Yeh pura menu aur checkout system hamare
+            <strong class="text-orange-300">Mock-Craft Engine</strong> se
+            dynamically stream ho raha hai without writing a single line of
+            backend logic!
+          </p>
+        </div>
+      </div>
+
+      <!-- Error Alert Container (Shown if 404 or 500 happens) -->
+      <div
+        id="errorAlert"
+        class="hidden p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between"
+      >
+        <div class="flex items-center gap-2">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i>
+          <span id="errorMessage"
+            >Unable to fetch menu. Is Mock-Craft Engine running on port
+            5000?</span
+          >
+        </div>
+        <button
+          onclick="fetchFoodMenu()"
+          class="px-3 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 font-bold"
+        >
+          Retry
+        </button>
+      </div>
+
+      <!-- Section Heading -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-white">Trending Dishes</h3>
+          <p class="text-xs text-slate-400">
+            Explore handcrafted dishes from top chefs
+          </p>
+        </div>
+        <span
+          id="menuCount"
+          class="text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1 rounded-xl border border-slate-800"
+        >
+          Loading...
+        </span>
+      </div>
+
+      <!-- Food Menu Grid (Dynamic) -->
+      <div
+        id="menuContainer"
+        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        <!-- Skeleton Shimmers will be injected here during 1.5s delay -->
+      </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- CART SLIDE-OVER DRAWER -->
+    <!-- ========================================== -->
+    <div
+      id="cartBackdrop"
+      onclick="toggleCartDrawer(false)"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden transition-opacity"
+    ></div>
+
+    <aside
+      id="cartDrawer"
+      class="fixed top-0 right-0 bottom-0 w-full sm:w-96 bg-slate-900 border-l border-slate-800 z-50 p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300"
+    >
+      <!-- Drawer Header -->
+      <div class="space-y-4">
+        <div
+          class="flex items-center justify-between pb-4 border-b border-slate-800"
+        >
+          <div class="flex items-center gap-2">
+            <i data-lucide="shopping-bag" class="w-5 h-5 text-orange-400"></i>
+            <h3 class="text-base font-bold text-white">Your Food Cart</h3>
+          </div>
+          <button
+            onclick="toggleCartDrawer(false)"
+            class="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
+          >
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Cart Items List Container -->
+        <div
+          id="cartItemsList"
+          class="space-y-3 max-h-[50vh] overflow-y-auto pr-1 font-mono text-xs"
+        >
+          <!-- Cart Items Injected Here -->
+        </div>
+      </div>
+
+      <!-- Drawer Footer / Checkout -->
+      <div class="space-y-4 pt-4 border-t border-slate-800">
+        <!-- Total Price Summary -->
+        <div class="flex items-center justify-between text-sm">
+          <span class="text-slate-400 font-medium">Grand Total:</span>
+          <span id="grandTotal" class="text-lg font-black text-white font-mono"
+            >₹0</span
+          >
+        </div>
+
+        <!-- Checkout Button (Triggers 2-second POST latency simulation) -->
+        <button
+          id="checkoutBtn"
+          onclick="handleCheckoutOrder()"
+          class="w-full py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+        >
+          <i data-lucide="zap" class="w-4 h-4"></i>
+          <span>Place Order Now</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========================================== -->
+    <!-- FLOATING TOAST NOTIFICATION -->
+    <!-- ========================================== -->
+    <div
+      id="toast"
+      class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 text-xs max-w-sm"
+    >
+      <i id="toastIcon" data-lucide="check-circle" class="w-5 h-5"></i>
+      <div>
+        <h5 id="toastTitle" class="font-bold">Notification</h5>
+        <p id="toastBody" class="text-slate-400 mt-0.5">Details here</p>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT: MOCK-CRAFT API CONNECTION -->
+    <!-- ========================================== -->
+    <script>
+      // =================================================================
+      // ⚙️ API CONFIGURATION (Directly Connected to Mock-Craft Engine)
+      // =================================================================
+      const MENU_API_URL = "http://localhost:5000/mock/api/v1/food/menu";
+      const CHECKOUT_API_URL =
+        "http://localhost:5000/mock/api/v1/orders/checkout";
+
+      let foodMenuData = [];
+      let cartItems = [];
+
+      // 1. Fetch Food Menu with Shimmer Skeleton Loading
+      async function fetchFoodMenu() {
+        const container = document.getElementById("menuContainer");
+        const errorAlert = document.getElementById("errorAlert");
+        const menuCount = document.getElementById("menuCount");
+
+        errorAlert.classList.add("hidden");
+        menuCount.innerText = "Fetching...";
+
+        // Render 4 Shimmer Skeleton Cards during the 1.5s Mock Delay
+        container.innerHTML = [1, 2, 3, 4]
+          .map(
+            () => `
+        <div class="rounded-3xl bg-slate-900/60 border border-slate-800/80 p-4 space-y-4 shimmer">
+          <div class="h-44 rounded-2xl bg-slate-800/60"></div>
+          <div class="space-y-2">
+            <div class="h-4 w-3/4 rounded-md bg-slate-800"></div>
+            <div class="h-3 w-1/2 rounded-md bg-slate-800/60"></div>
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <div class="h-5 w-16 rounded-md bg-slate-800"></div>
+            <div class="h-8 w-20 rounded-xl bg-slate-800"></div>
+          </div>
+        </div>
+      `,
+          )
+          .join("");
+
+        try {
+          const res = await fetch(MENU_API_URL);
+          if (!res.ok)
+            throw new Error(`HTTP Error ${res.status}: Mock Endpoint issue`);
+
+          foodMenuData = await res.json();
+          menuCount.innerText = `${foodMenuData.length} Dishes Available`;
+
+          // Render Real Dishes Received from Mock Engine
+          container.innerHTML = foodMenuData
+            .map(
+              (item) => `
+          <div class="group rounded-3xl bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800 hover:border-slate-700 p-4 flex flex-col justify-between transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
+            <div class="space-y-3">
+              <div class="relative h-44 rounded-2xl overflow-hidden">
+                <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                <span class="absolute top-2.5 right-2.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-bold text-amber-400 flex items-center gap-1">
+                  ⭐ ${item.rating}
+                </span>
+                <span class="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-orange-500/90 text-white text-[10px] font-bold uppercase tracking-wider">
+                  ${item.category}
+                </span>
+              </div>
+              <div>
+                <h4 class="text-sm font-bold text-white truncate">${item.name}</h4>
+                <p class="text-xs text-slate-400">Freshly made with secret sauce & herbs</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4 mt-2 border-t border-slate-800/60">
+              <span class="text-base font-black text-white font-mono">₹${item.price}</span>
+              <button onclick="addToCart(${item.id})" class="px-3.5 py-1.5 rounded-xl bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white border border-orange-500/30 text-xs font-bold transition-all flex items-center gap-1.5">
+                <span>Add</span>
+                <span>+</span>
+              </button>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+        } catch (err) {
+          container.innerHTML = "";
+          errorAlert.classList.remove("hidden");
+          document.getElementById("errorMessage").innerText =
+            `Failed to load menu (${err.message}). Make sure Mock-Craft Engine is running!`;
+          menuCount.innerText = "Offline";
+        }
+
+        lucide.createIcons();
+      }
+
+      // 2. Add Item to Cart
+      function addToCart(itemId) {
+        const item = foodMenuData.find((f) => f.id === itemId);
+        if (!item) return;
+
+        const existing = cartItems.find((c) => c.id === itemId);
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          cartItems.push({ ...item, qty: 1 });
+        }
+
+        updateCartUI();
+        showToast(
+          "Item Added 🛒",
+          `${item.name} added to your tray.`,
+          "success",
+        );
+      }
+
+      // 3. Update Cart Drawer UI & Counter
+      function updateCartUI() {
+        const listContainer = document.getElementById("cartItemsList");
+        const countBadge = document.getElementById("cartCountBadge");
+        const grandTotal = document.getElementById("grandTotal");
+
+        const totalCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
+        const totalAmount = cartItems.reduce(
+          (sum, item) => sum + item.price * item.qty,
+          0,
+        );
+
+        countBadge.innerText = totalCount;
+        grandTotal.innerText = `₹${totalAmount}`;
+
+        if (cartItems.length === 0) {
+          listContainer.innerHTML = `
+          <div class="text-center py-12 text-slate-500 space-y-2">
+            <p>Your food cart is empty 🍔</p>
+            <p class="text-[10px]">Add dishes from the menu to place an order</p>
+          </div>
+        `;
+          return;
+        }
+
+        listContainer.innerHTML = cartItems
+          .map(
+            (item) => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+          <div>
+            <h5 class="font-bold text-white truncate max-w-[150px]">${item.name}</h5>
+            <p class="text-slate-500 text-[10px]">₹${item.price} × ${item.qty}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-orange-400">₹${item.price * item.qty}</span>
+            <button onclick="removeFromCart(${item.id})" class="text-slate-500 hover:text-rose-400 p-1">✕</button>
+          </div>
+        </div>
+      `,
+          )
+          .join("");
+      }
+
+      function removeFromCart(id) {
+        cartItems = cartItems.filter((i) => i.id !== id);
+        updateCartUI();
+      }
+
+      // 4. Handle Checkout Order (Tests POST API with 2000ms delay & 500 error scenarios)
+      async function handleCheckoutOrder() {
+        if (cartItems.length === 0) {
+          showToast(
+            "Cart Empty",
+            "Please add at least 1 item to checkout",
+            "error",
+          );
+          return;
+        }
+
+        const btn = document.getElementById("checkoutBtn");
+        btn.disabled = true;
+        btn.innerHTML = `<span class="animate-spin inline-block mr-2">🔄</span> Processing Payment (Mock Delay)...`;
+
+        try {
+          const payload = {
+            items: cartItems,
+            totalAmount: cartItems.reduce(
+              (sum, item) => sum + item.price * item.qty,
+              0,
+            ),
+            customer: "Shivam Keshari",
+          };
+
+          const res = await fetch(CHECKOUT_API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+
+          if (res.status >= 400) {
+            throw new Error(data.message || `Server Error ${res.status}`);
+          }
+
+          // Success Popup
+          showToast(
+            "Order Confirmed! 🎉",
+            data.message || "Your food is on the way!",
+            "success",
+          );
+          cartItems = [];
+          updateCartUI();
+          toggleCartDrawer(false);
+        } catch (err) {
+          showToast("Payment Failed ❌", `${err.message}`, "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="zap" class="w-4 h-4"></i><span>Place Order Now</span>`;
+          lucide.createIcons();
+        }
+      }
+
+      // 5. Toast Notification Helper
+      function showToast(title, body, type = "success") {
+        const toast = document.getElementById("toast");
+        const toastTitle = document.getElementById("toastTitle");
+        const toastBody = document.getElementById("toastBody");
+        const toastIcon = document.getElementById("toastIcon");
+
+        toastTitle.innerText = title;
+        toastBody.innerText = body;
+
+        if (type === "success") {
+          toast.className =
+            "fixed bottom-6 right-6 z-50 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 text-xs max-w-sm bg-emerald-500/10 border-emerald-500/30 text-emerald-300 translate-y-0 opacity-100 transition-all duration-300";
+          toastIcon.setAttribute("data-lucide", "check-circle");
+        } else {
+          toast.className =
+            "fixed bottom-6 right-6 z-50 p-4 rounded-2xl border backdrop-blur-xl shadow-2xl flex items-center gap-3 text-xs max-w-sm bg-rose-500/10 border-rose-500/30 text-rose-300 translate-y-0 opacity-100 transition-all duration-300";
+          toastIcon.setAttribute("data-lucide", "alert-triangle");
+        }
+
+        lucide.createIcons();
+
+        setTimeout(() => {
+          toast.classList.add("translate-y-24", "opacity-0");
+        }, 3500);
+      }
+
+      // 6. Cart Drawer Toggle Helper
+      function toggleCartDrawer(open) {
+        const drawer = document.getElementById("cartDrawer");
+        const backdrop = document.getElementById("cartBackdrop");
+
+        if (open) {
+          drawer.classList.remove("translate-x-full");
+          backdrop.classList.remove("hidden");
+        } else {
+          drawer.classList.add("translate-x-full");
+          backdrop.classList.add("hidden");
+        }
+      }
+
+      // Initial Load
+      window.addEventListener("DOMContentLoaded", () => {
+        lucide.createIcons();
+        fetchFoodMenu();
+        updateCartUI();
+      });
+    </script>
+  </body>
+</html>
