@@ -1,4 +1,4 @@
-const Log = require("../models/Log");
+const Log = require("../models/log");
 const Endpoint = require("../models/Endpoint");
 
 // @desc    Get Overall Analytics KPI Summary (Total Requests, Latency, Success Rate)
@@ -48,7 +48,7 @@ const getOverviewStats = async (req, res, next) => {
     const avgLatency = Math.round(stats[0]?.avgLatency || 0);
     const successCount = stats[0]?.successCount || 0;
     const successRate = Number(
-      ((successCount / totalRequests) * 100).toFixed(2)
+      ((successCount / totalRequests) * 100).toFixed(2),
     );
 
     res.status(200).json({

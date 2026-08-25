@@ -1,5 +1,5 @@
 const Endpoint = require("../models/Endpoint");
-const Log = require("../models/Log");
+const Log = require("../models/log");
 
 // Asynchronous Non-blocking Sleep Utility Helper
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
