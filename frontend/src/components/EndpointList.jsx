@@ -12,6 +12,7 @@ import {
   Filter,
   X,
 } from "lucide-react";
+import { BASE_URL } from "../services/api";
 
 const methodColors = {
   GET: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
@@ -44,7 +45,7 @@ const EndpointList = ({
   const [selectedMethod, setSelectedMethod] = useState("ALL");
 
   const handleCopy = (endpoint) => {
-    const fullUrl = `http://localhost:5000/mock${endpoint.path}`;
+    const fullUrl = `${BASE_URL}/mock${endpoint.path}`;
     navigator.clipboard.writeText(fullUrl);
     setCopiedId(endpoint._id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -190,7 +191,7 @@ const EndpointList = ({
             const statusBadgeClass =
               statusColors[statusFirstDigit] ||
               "text-slate-400 bg-slate-500/10";
-            const fullUrl = `http://localhost:5000/mock${ep.path}`;
+            const fullUrl = `${BASE_URL}/mock${ep.path}`;
 
             return (
               <div

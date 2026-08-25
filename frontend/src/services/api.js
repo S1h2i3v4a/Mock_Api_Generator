@@ -1,14 +1,21 @@
 import axios from "axios";
 
-const BASE_URL = "https://mock-api-generator-1-xys4.onrender.com";
+export const BASE_URL =
+  import.meta.env.VITE_API_URL || "https://mock-api-generator-1-xys4.onrender.com";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000, // 10s timeout
+  timeout: 15000, // 15s timeout
 });
+
+// Health Check API
+export const checkHealth = async () => {
+  const response = await apiClient.get("/api/v1/health");
+  return response.data;
+};
 
 // 1. Endpoint Management CRUD APIs
 export const getEndpoints = async () => {

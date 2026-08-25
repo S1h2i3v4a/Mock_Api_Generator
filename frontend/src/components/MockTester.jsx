@@ -12,7 +12,7 @@ import {
   RotateCcw,
   Sparkles,
 } from "lucide-react";
-import { executeMockRequest } from "../services/api";
+import { executeMockRequest, BASE_URL } from "../services/api";
 
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"];
 
@@ -141,8 +141,8 @@ const MockTester = ({ initialEndpoint = null, endpoints = [] }) => {
 
         {/* URL Input Bar */}
         <div className="flex-1 flex items-center rounded-xl bg-slate-950/80 border border-slate-800/80 px-3.5 py-2">
-          <span className="text-xs font-mono text-slate-500 select-none mr-1.5">
-            http://localhost:5000/mock
+          <span className="text-xs font-mono text-slate-500 select-none mr-1.5 truncate max-w-[200px] sm:max-w-none">
+            {BASE_URL}/mock
           </span>
           <input
             type="text"

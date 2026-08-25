@@ -8,11 +8,13 @@ import LogViewer from "./components/LogViewer";
 import AnalyticsCharts from "./components/AnalyticsCharts";
 import {
   getEndpoints,
+  getAnalyticsSummary,
+  getRecentLogs,
   createEndpoint,
   updateEndpoint,
   deleteEndpoint,
-  getAnalyticsSummary,
-  getRecentLogs,
+  checkHealth,
+  BASE_URL,
 } from "./services/api";
 import axios from "axios";
 
@@ -40,7 +42,7 @@ function App() {
   // 1. Fetch All Data from Backend
   const fetchDashboardData = async () => {
     try {
-      await axios.get("http://localhost:5000/api/v1/health", { timeout: 3000 });
+      await checkHealth();
       setIsBackendLive(true);
 
       const [endpointsRes, statsRes, logsRes] = await Promise.all([
@@ -200,7 +202,7 @@ function App() {
                 <strong>Backend Offline:</strong> Ensure your Express server is
                 running on{" "}
                 <code className="bg-rose-950/60 px-1.5 py-0.5 rounded text-rose-200">
-                  http://localhost:5000
+                  {BASE_URL}
                 </code>
               </span>
             </div>
