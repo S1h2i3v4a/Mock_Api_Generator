@@ -1,4 +1,4 @@
-Link:-  https://mock-api-generator-62q1.onrender.com
+Link:-   (https://mock-api-generator-opal.vercel.app/)
 
 
 Problem Statement & Solution
